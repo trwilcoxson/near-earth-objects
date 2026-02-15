@@ -9,8 +9,6 @@ formatted as described in the project instructions, into a collection of
 
 The main module calls these functions with the arguments provided at the command
 line, and uses the resulting collections to build an `NEODatabase`.
-
-You'll edit this file in Task 2.
 """
 import csv
 import json
@@ -24,8 +22,21 @@ def load_neos(neo_csv_path):
     :param neo_csv_path: A path to a CSV file containing data about near-Earth objects.
     :return: A collection of `NearEarthObject`s.
     """
-    # TODO: Load NEO data from the given CSV file.
-    return ()
+    neos = []
+    with open(neo_csv_path, 'r') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            designation = row['pdes']
+            name = row['name'] if row['name'] else None
+            diameter = float(row['diameter']) if row['diameter'] else float('nan')
+            hazardous = (row['pha'] == 'Y')
+            neos.append(NearEarthObject(
+                designation=designation,
+                name=name,
+                diameter=diameter,
+                hazardous=hazardous,
+            ))
+    return neos
 
 
 def load_approaches(cad_json_path):
@@ -34,5 +45,20 @@ def load_approaches(cad_json_path):
     :param cad_json_path: A path to a JSON file containing data about close approaches.
     :return: A collection of `CloseApproach`es.
     """
-    # TODO: Load close approach data from the given JSON file.
-    return ()
+    approaches = []
+    with open(cad_json_path, 'r') as f:
+        data = json.load(f)
+
+    for row in data['data']:
+        # Fields: des, orbit_id, jd, cd, dist, dist_min, dist_max, v_rel, v_inf, t_sigma_f, h
+        designation = row[0]
+        time = row[3]
+        distance = float(row[4])
+        velocity = float(row[7])
+        approaches.append(CloseApproach(
+            designation=designation,
+            time=time,
+            distance=distance,
+            velocity=velocity,
+        ))
+    return approaches
